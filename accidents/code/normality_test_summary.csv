@@ -1,0 +1,4 @@
+Group,N,Mean,SD,Skewness,Kurtosis,Shapiro p-value,AD p-value,Normal
+All April Data,75,NA,NA,NA,NA,0.0911,0.0408,Yes
+4/20 Only,25,NA,NA,NA,NA,0.0701,0.051,Yes
+Control Only,50,NA,NA,NA,NA,0.6231,0.4471,Yes

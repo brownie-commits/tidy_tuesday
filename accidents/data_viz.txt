@@ -1,0 +1,139 @@
+# Data Visualization ------------------------------------------------------
+
+# Date: 7/30/2025
+
+range(all_accidents$timestamp)
+
+means <- list(
+  overall = daily_accidents,
+  non420 = daily_accidents_420 %>% filter(e420 == FALSE),
+  on420 = daily_accidents_420 %>% filter(e420 == TRUE),
+  evening = daily_accidents_420_time %>% filter(d420 == TRUE)
+) %>%
+  map_dbl(~ mean(.x$fatalities_count, na.rm = TRUE))
+
+print(means)
+
+sum_stats <- function(df, group) {
+  df %>% 
+    group_by({{group}}) %>%
+    summarise(
+      mean = mean(fatalities_count, na.rm = TRUE),
+      median = median(fatalities_count, na.rm = TRUE),
+      sd = sd(fatalities_count, na.rm = TRUE),
+      n = n()
+    )
+}
+
+sum_stats(daily_accidents_420, e420)
+
+sum_stats(daily_accidents_420_time, d420)
+
+daily_accidents %>%
+  summarise(
+    mean = mean(fatalities_count, na.rm = TRUE),
+    median = median(fatalities_count, na.rm = TRUE),
+    sd = sd(fatalities_count, na.rm = TRUE),
+    min = min(fatalities_count, na.rm = TRUE),
+    max = max(fatalities_count, na.rm = TRUE)
+  )
+
+daily_accidents_420 %>%
+  ggplot(aes(x = e420, y = fatalities_count)) +
+  geom_boxplot(na.rm = TRUE)
+
+daily_accidents_420_time %>%
+  ggplot(aes(x = d420, y = fatalities_count)) +
+  geom_boxplot(na.rm = TRUE)
+
+t.test(fatalities_count ~ e420, data = daily_accidents_420)
+
+# Test normality
+
+daily_accidents_420 %>% 
+  ggplot(aes(x = fatalities_count)) + 
+  geom_density()
+
+# Test variance
+
+bartlett.test(fatalities_count ~ e420, data = daily_accidents_420)
+
+daily_accidents_420 %>%
+  group_by(e420) %>%
+  summarise(variance = var(fatalities_count, na.rm = TRUE))
+
+ggplot(daily_accidents_420, aes(x = e420, y = fatalities_count)) +
+  geom_boxplot(outlier.shape = NA, fill = "lightblue") +
+  geom_jitter(width = 0.2, alpha = 0.5, color = "darkblue") +
+  labs(
+    title = "Fatalities by 4/20 Status",
+    subtitle = "Boxplot with jittered points to show variance",
+    x = "Is 4/20?",
+    y = "Daily Fatalities"
+  ) +
+  theme_minimal()
+
+# model
+
+library(dplyr)
+library(lubridate)
+
+# Join your daily series and flags
+df_model <- daily_accidents %>%
+  left_join(daily_accidents_420, by = "date") %>%
+  left_join(daily_accidents_420_time, by = "date") %>%
+  mutate(
+    dow   = wday(date, label = TRUE),      # day of week
+    year  = year(date),
+    month = month(date)
+  ) %>%
+  replace_na(list(e420 = FALSE, d420 = FALSE))
+
+
+daily_accidents_420 %>%
+  ()
+  ggplot(aes(x = date, y = fatalities_count)) + 
+  geom_point()
+
+install.packages("zoo")
+  # 1. Load required packages
+  library(dplyr)
+  library(zoo)        # for rollmean()
+  library(ggplot2)
+  
+  # 2. Calculate rolling average and plot
+daily_accidents_420 %>%
+    arrange(date) %>%  
+    mutate(
+      rolling_avg = rollmean(fatalities_count,
+                             k    = 365,        # 7-day window
+                             fill = NA,       # pad start/end with NA
+                             align = "right"  # each avg ends on that day
+      )
+    ) %>%
+    ggplot(aes(x = date)) +
+    # raw daily fatalities
+    geom_point(aes(y = fatalities_count),
+               color = "grey50",
+               alpha = 0.6) +
+    # 7-day rolling average line
+    geom_line(aes(y = rolling_avg),
+              color = "steelblue",
+              size  = 1) +
+    labs(
+      title = "Daily Accident Fatalities with 7-Day Rolling Average",
+      x     = "Date",
+      y     = "Fatalities Count"
+    ) +
+    theme_minimal()
+
+
+# Times Series ------------------------------------------------------------
+
+
+
+
+
+
+
+
